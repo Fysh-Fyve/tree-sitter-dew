@@ -10,36 +10,42 @@
 // @ts-check
 
 const PREC = {
-  unary: 3,
-  mul_div: 2,
-  add_sub: 1,
-  lt_gt_e: 0,
+  unary: 5,
+  mul_div: 4,
+  add_sub: 3,
+  lt_gt_e: 2,
+  and: 1,
+  or: 0,
 }
 
 module.exports = grammar({
   name: "dew",
 
+  extras: $ => [
+    $.comment,
+    /\s/,
+  ],
+
   word: $ => $.identifier,
 
   rules: {
-    // TODO: add the actual grammar rules
-    source_file: $ => repeat($._definition),
-    _definition: $ => choice(
-      $.function_definition
-    ),
+    source_file: $ => repeat($._top_level_defs),
+
+    _top_level_defs: $ => choice($.function_definition),
 
     function_definition: $ => seq(
       'fun',
       field('name', $.identifier),
       field('parameters', $.parameter_list),
-      field('return_type', $._type),
+      field('return_type', optional($._type)),
       field('body', $.block),
     ),
 
-    parameter_list: $ => seq(
-      '(',
-      // TODO: parameters
-      ')'
+    parameter_list: $ => seq('(', optional(seq(commaSep($.parameter_declaration), optional(','))), ')'),
+
+    parameter_declaration: $ => seq(
+      field('type', $._type),
+      field('name', $.identifier),
     ),
 
     _type: $ => choice(
@@ -47,6 +53,7 @@ module.exports = grammar({
       $.array_type,
       $.pointer_type,
       // TODO: other kinds of types
+      seq('(', $._type, ')'),
     ),
 
     array_type: $ => seq('[', $._type, ']'),
@@ -90,22 +97,57 @@ module.exports = grammar({
     ),
 
     unary_expression: $ => prec(PREC.unary, seq(
-      field('operator', choice(
-        '-',
-        // ...
-      )),
+      field('operator', choice('+', '-', '!', '~', '*', '&')),
       field('operand', $._expression),
-
     )),
 
-    binary_expression: $ => choice(
-      prec.left(PREC.mul_div, seq($._expression, choice('*', '/'), $._expression)),
-      prec.left(PREC.add_sub, seq($._expression, choice('+', '-'), $._expression)),
-      prec.left(PREC.lt_gt_e, seq($._expression, choice('>', '<', '>=', '<=', '==', '!='), $._expression)),
-      // ...
-    ),
+    binary_expression: $ => choice(...[
+      [PREC.mul_div, choice('*', '/', '%', '<<', '>>', '&')], // mul, div, mod, sl, sr, bw-and
+      [PREC.add_sub, choice('+', '-', '|', '^')], // add, sub, bw-or, bw-xor
+      [PREC.lt_gt_e, choice('>', '<', '>=', '<=', '==', '!=')], // gt, lt, gte, lte, eq, neq
+      [PREC.and, '&&'], // logical and
+      [PREC.or, '||'], // logical or
+    ].map(([precedence, operators]) =>
+      // @ts-expect-error
+      prec.left(precedence, seq(
+        field('left', $._expression),
+        // @ts-expect-error
+        field('operator', operators),
+        field('right', $._expression),
+      )))),
+
+    // http://stackoverflow.com/questions/13014947/regex-to-match-a-c-style-multiline-comment/36328890#36328890
+    comment: _ => token(choice(
+      seq('//', /.*/),
+      seq('/*', /[^*]*\*+([^/*][^*]*\*+)*/, '/',
+      ),
+    )),
 
     identifier: $ => token(/[a-zA-Z]+/),
     int_literal: $ => token(/\d+/),
   },
 });
+
+/**
+ * Creates a rule to match one or more of the rules separated by a comma
+ *
+ * @param {Rule} rule
+ *
+ * @return {SeqRule}
+ *
+ */
+function commaSep1(rule) {
+  return seq(rule, repeat(seq(',', rule)));
+}
+
+/**
+ * Creates a rule to optionally match one or more of the rules separated by a comma
+ *
+ * @param {Rule} rule
+ *
+ * @return {ChoiceRule}
+ *
+ */
+function commaSep(rule) {
+  return optional(commaSep1(rule));
+}

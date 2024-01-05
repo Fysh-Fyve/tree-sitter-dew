@@ -1,0 +1,48 @@
+====================
+Function Declaration
+====================
+
+fun main() {}
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block)))
+
+====================================
+Function Declaration with Parameters
+====================================
+
+fun foo(bol a, bol b) {}
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (parameter_list
+      (parameter_declaration
+        (primitive_type)
+        (identifier))
+      (parameter_declaration
+        (primitive_type)
+        (identifier)))
+    (block)))
+
+=====================================
+Function Declaration with Return Type
+=====================================
+
+fun foo() i8 {}
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (primitive_type)
+    (block)))
