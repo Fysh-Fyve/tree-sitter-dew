@@ -9,14 +9,25 @@
 /// <reference types="tree-sitter-cli/dsl" />
 // @ts-check
 
-const PREC = {
-  unary: 5,
-  mul_div: 4,
-  add_sub: 3,
-  lt_gt_e: 2,
-  and: 1,
-  or: 0,
-}
+const
+  PREC = {
+    primary: 6,
+    unary: 5,
+    mul_div: 4,
+    add_sub: 3,
+    lt_gt_e: 2,
+    and: 1,
+    or: 0,
+  },
+  terminator = choice('\n', ';', '\0');
+
+const [hexDigits, octalDigits, decimalDigits, binaryDigits] = [
+  /[0-9a-fA-F]/,
+  /[0-7]/,
+  /[0-9]/,
+  /[01]/,
+].map(d => seq(d, repeat(seq(optional('_'), d))));
+
 
 module.exports = grammar({
   name: "dew",
@@ -28,20 +39,43 @@ module.exports = grammar({
 
   word: $ => $.identifier,
 
+  conflicts: $ => [
+    // [$._simple_type, $._expression],
+    // [$.qualified_type, $._expression],
+    // [$.generic_type, $._expression],
+    // [$.generic_type, $._simple_type],
+    [$.parameter_declaration, $._simple_type, $._expression],
+    // [$.parameter_declaration, $.generic_type, $._expression],
+    [$.parameter_declaration, $._expression],
+    [$.parameter_declaration, $._simple_type],
+  ],
+
   rules: {
     source_file: $ => repeat($._top_level_defs),
 
-    _top_level_defs: $ => choice($.function_definition),
+    _top_level_defs: $ => choice($.function_declaration),
 
-    function_definition: $ => seq(
+    function_declaration: $ => seq(
       'fun',
       field('name', $.identifier),
       field('parameters', $.parameter_list),
-      field('return_type', optional($._type)),
+      field('return_type', optional(choice($._simple_type, $.return_type_list))),
       field('body', $.block),
     ),
 
-    parameter_list: $ => seq('(', optional(seq(commaSep($.parameter_declaration), optional(','))), ')'),
+    return_type_list: $ => seq(
+      '(',
+      $._type,
+      ',',
+      seq(commaSep($._type), optional(',')),
+      ')',
+    ),
+
+    parameter_list: $ => seq(
+      '(',
+      seq(commaSep($.parameter_declaration), optional(',')),
+      ')',
+    ),
 
     parameter_declaration: $ => seq(
       field('type', $._type),
@@ -49,52 +83,71 @@ module.exports = grammar({
     ),
 
     _type: $ => choice(
-      $.primitive_type,
-      $.array_type,
+      $._simple_type,
+      $.parenthesized_type,
+    ),
+
+    parenthesized_type: $ => seq('(', $._type, ')'),
+
+    _simple_type: $ => choice(
+      prec.dynamic(-1, $._type_identifier),
       $.pointer_type,
-      // TODO: other kinds of types
-      seq('(', $._type, ')'),
+      $.array_type,
     ),
 
-    array_type: $ => seq('[', $._type, ']'),
+    _type_identifier: $ => alias($.identifier, $.type_identifier),
 
-    pointer_type: $ => seq('*', $._type),
+    array_type: $ => prec.left(seq(
+      field('element', $._type),
+      '[',
+      field('length', $._expression),
+      ']',
+    )),
 
-    primitive_type: $ => choice(
-      'bol',
-      'i8',
-      'i16',
-      'i32',
-      'u8',
-      'u16',
-      'u32',
-      'str',
-    ),
+    pointer_type: $ => prec(PREC.unary, seq('*', $._type)),
 
     block: $ => seq(
       '{',
-      repeat($._statement),
+      optional(seq($._statement, repeat(seq(terminator, $._statement)))),
       '}'
     ),
 
     _statement: $ => choice(
+      $._declaration,
+      // $._simple_statement,
       $.return_statement,
       // TODO: other kinds of statements
     ),
 
-    return_statement: $ => seq(
-      'return',
-      $._expression,
-      ';'
+    _declaration: $ => choice(
+      $.var_declaration,
     ),
+
+    var_declaration: $ => seq($._type, $.identifier),
+
+    // _simple_statement: $ => choice(
+    //
+    // ),
+
+    expression_list: $ => commaSep1($._expression),
+
+    return_statement: $ => seq('return', $._expression, ';'),
 
     _expression: $ => choice(
       $.identifier,
       $.unary_expression,
       $.binary_expression,
+      $.index_expression,
       $.int_literal,
       // TODO: other kinds of expressions
     ),
+
+    index_expression: $ => prec(PREC.primary, seq(
+      field('operand', $._expression),
+      '[',
+      field('index', $._expression),
+      ']',
+    )),
 
     unary_expression: $ => prec(PREC.unary, seq(
       field('operator', choice('+', '-', '!', '~', '*', '&')),
@@ -123,8 +176,13 @@ module.exports = grammar({
       ),
     )),
 
-    identifier: $ => token(/[a-zA-Z]+/),
-    int_literal: $ => token(/\d+/),
+    identifier: _ => /[_a-zA-Z][_a-zA-Z0-9]*/,
+    int_literal: _ => token(choice(
+      seq('0', choice('b', 'B'), optional('_'), binaryDigits),
+      choice('0', seq(/[1-9]/, optional(seq(optional('_'), decimalDigits)))),
+      seq('0', choice('o', 'O'), optional('_'), octalDigits),
+      seq('0', choice('x', 'X'), optional('_'), hexDigits),
+    )),
   },
 });
 

@@ -1,48 +1,113 @@
-====================
+================================================================================
 Function Declaration
-====================
+================================================================================
 
 fun main() {}
 
----
+--------------------------------------------------------------------------------
 
 (source_file
-  (function_definition
+  (function_declaration
     (identifier)
     (parameter_list)
     (block)))
 
-====================================
-Function Declaration with Parameters
-====================================
+================================================================================
+Function Declaration with One Parameter
+================================================================================
 
-fun foo(bol a, bol b) {}
+fun foo(bol a) {}
 
----
+--------------------------------------------------------------------------------
 
 (source_file
-  (function_definition
+  (function_declaration
     (identifier)
     (parameter_list
       (parameter_declaration
-        (primitive_type)
-        (identifier))
-      (parameter_declaration
-        (primitive_type)
+        (type_identifier)
         (identifier)))
     (block)))
 
-=====================================
+================================================================================
+Function Declaration with Two Parameters
+================================================================================
+
+fun foo(bol a, bol b) {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter_declaration
+        (type_identifier)
+        (identifier))
+      (parameter_declaration
+        (type_identifier)
+        (identifier)))
+    (block)))
+
+================================================================================
 Function Declaration with Return Type
-=====================================
+================================================================================
 
 fun foo() i8 {}
 
----
+--------------------------------------------------------------------------------
 
 (source_file
-  (function_definition
+  (function_declaration
     (identifier)
     (parameter_list)
-    (primitive_type)
+    (type_identifier)
+    (block)))
+
+================================================================================
+Function Declaration with Multiple Return Values
+================================================================================
+
+fun foo() (i8, i8) {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (return_type_list
+      (type_identifier)
+      (type_identifier))
+    (block)))
+
+================================================================================
+Function Declaration with Whitespace and Trailing Commas
+================================================================================
+
+fun foo(
+  bol a,
+  bol b,
+) (
+  i8,
+  i8,
+) {
+
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter_declaration
+        (type_identifier)
+        (identifier))
+      (parameter_declaration
+        (type_identifier)
+        (identifier)))
+    (return_type_list
+      (type_identifier)
+      (type_identifier))
     (block)))
