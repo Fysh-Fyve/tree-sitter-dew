@@ -111,3 +111,22 @@ fun foo(
       (type_identifier)
       (type_identifier))
     (block)))
+
+================================================================================
+Variable declaration
+================================================================================
+
+fun main() {
+  i8 foo
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (var_declaration
+        (type_identifier)
+        (identifier)))))

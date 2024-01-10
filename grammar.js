@@ -32,15 +32,18 @@ const [hexDigits, octalDigits, decimalDigits, binaryDigits] = [
 module.exports = grammar({
   name: "dew",
 
-  extras: $ => [
-    $.comment,
-    /\s/,
-  ],
+  extras: $ => [$.comment, /\s/,],
 
   word: $ => $.identifier,
 
+  inline: $ => [
+    $._type,
+    $._type_identifier,
+    $._top_level_declaration,
+  ],
+
   conflicts: $ => [
-    // [$._simple_type, $._expression],
+    [$._simple_type, $._expression],
     // [$.qualified_type, $._expression],
     // [$.generic_type, $._expression],
     // [$.generic_type, $._simple_type],
@@ -50,18 +53,25 @@ module.exports = grammar({
     [$.parameter_declaration, $._simple_type],
   ],
 
+  supertypes: $ => [
+    $._expression,
+    $._type,
+    $._simple_type,
+    $._statement,
+  ],
+
   rules: {
     source_file: $ => repeat($._top_level_defs),
 
     _top_level_defs: $ => choice($.function_declaration),
 
-    function_declaration: $ => seq(
+    function_declaration: $ => prec.right(1, seq(
       'fun',
       field('name', $.identifier),
       field('parameters', $.parameter_list),
       field('return_type', optional(choice($._simple_type, $.return_type_list))),
-      field('body', $.block),
-    ),
+      field('body', optional($.block)),
+    )),
 
     return_type_list: $ => seq(
       '(',
@@ -73,7 +83,7 @@ module.exports = grammar({
 
     parameter_list: $ => seq(
       '(',
-      seq(commaSep($.parameter_declaration), optional(',')),
+      optional(seq(commaSep($.parameter_declaration), optional(','))),
       ')',
     ),
 
@@ -106,10 +116,12 @@ module.exports = grammar({
 
     pointer_type: $ => prec(PREC.unary, seq('*', $._type)),
 
-    block: $ => seq(
-      '{',
-      optional(seq($._statement, repeat(seq(terminator, $._statement)))),
-      '}'
+    block: $ => seq('{', optional($._statement_list), '}'),
+
+    _statement_list: $ => seq(
+      $._statement,
+      repeat(seq(terminator, $._statement)),
+      optional(terminator),
     ),
 
     _statement: $ => choice(
@@ -123,15 +135,19 @@ module.exports = grammar({
       $.var_declaration,
     ),
 
-    var_declaration: $ => seq($._type, $.identifier),
+    var_declaration: $ => seq(
+      field('type', $._type),
+      field('name', $.identifier),
+      optional(seq('=', field('value', $.expression_list))),
+    ),
 
     // _simple_statement: $ => choice(
     //
     // ),
 
-    expression_list: $ => commaSep1($._expression),
+    return_statement: $ => seq('return', optional($.expression_list)),
 
-    return_statement: $ => seq('return', $._expression, ';'),
+    expression_list: $ => commaSep1($._expression),
 
     _expression: $ => choice(
       $.identifier,
@@ -172,11 +188,12 @@ module.exports = grammar({
     // http://stackoverflow.com/questions/13014947/regex-to-match-a-c-style-multiline-comment/36328890#36328890
     comment: _ => token(choice(
       seq('//', /.*/),
-      seq('/*', /[^*]*\*+([^/*][^*]*\*+)*/, '/',
-      ),
+      seq('/*', /[^*]*\*+([^/*][^*]*\*+)*/, '/'),
     )),
 
-    identifier: _ => /[_a-zA-Z][_a-zA-Z0-9]*/,
+    // Use the same as Go because it's more fun
+    identifier: _ => /[_\p{XID_Start}][_\p{XID_Continue}]*/,
+
     int_literal: _ => token(choice(
       seq('0', choice('b', 'B'), optional('_'), binaryDigits),
       choice('0', seq(/[1-9]/, optional(seq(optional('_'), decimalDigits)))),
