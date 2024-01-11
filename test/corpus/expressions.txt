@@ -1,0 +1,156 @@
+================================================================================
+Quick Maths
+================================================================================
+
+fun maths() {
+    1 + 2
+    1 - 2
+    1 * 2
+    4 / 2
+    50 / 2 * 2 + 10 - 5
+    5 + 5 + 5 + 5 - 10
+    2 * 2 * 2 * 2 * 2
+    5 * 2 + 10
+    5 + 2 * 10
+    5 * (2 + 10);
+    -5;
+    -10;
+    -50 + 100 + -50;
+    (5 + 10 * 2 + 15 / 3) * 2 + -10
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (expression_statement
+        (binary_expression
+          (int_literal)
+          (int_literal)))
+      (expression_statement
+        (binary_expression
+          (int_literal)
+          (int_literal)))
+      (expression_statement
+        (binary_expression
+          (int_literal)
+          (int_literal)))
+      (expression_statement
+        (binary_expression
+          (int_literal)
+          (int_literal)))
+      (expression_statement
+        (binary_expression
+          (binary_expression
+            (binary_expression
+              (binary_expression
+                (int_literal)
+                (int_literal))
+              (int_literal))
+            (int_literal))
+          (int_literal)))
+      (expression_statement
+        (binary_expression
+          (binary_expression
+            (binary_expression
+              (binary_expression
+                (int_literal)
+                (int_literal))
+              (int_literal))
+            (int_literal))
+          (int_literal)))
+      (expression_statement
+        (binary_expression
+          (binary_expression
+            (binary_expression
+              (binary_expression
+                (int_literal)
+                (int_literal))
+              (int_literal))
+            (int_literal))
+          (int_literal)))
+      (expression_statement
+        (binary_expression
+          (binary_expression
+            (int_literal)
+            (int_literal))
+          (int_literal)))
+      (expression_statement
+        (binary_expression
+          (int_literal)
+          (binary_expression
+            (int_literal)
+            (int_literal))))
+      (expression_statement
+        (binary_expression
+          (int_literal)
+          (parenthesized_expression
+            (binary_expression
+              (int_literal)
+              (int_literal)))))
+      (expression_statement
+        (unary_expression
+          (int_literal)))
+      (expression_statement
+        (unary_expression
+          (int_literal)))
+      (expression_statement
+        (binary_expression
+          (binary_expression
+            (unary_expression
+              (int_literal))
+            (int_literal))
+          (unary_expression
+            (int_literal))))
+      (expression_statement
+        (binary_expression
+          (binary_expression
+            (parenthesized_expression
+              (binary_expression
+                (binary_expression
+                  (int_literal)
+                  (binary_expression
+                    (int_literal)
+                    (int_literal)))
+                (binary_expression
+                  (int_literal)
+                  (int_literal))))
+            (int_literal))
+          (unary_expression
+            (int_literal)))))))
+
+================================================================================
+Pointer Stuff
+================================================================================
+
+fun maths() {
+    *p;
+    **p;
+    &p;
+    0[p]
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (expression_statement
+        (unary_expression
+          (identifier)))
+      (expression_statement
+        (unary_expression
+          (unary_expression
+            (identifier))))
+      (expression_statement
+        (unary_expression
+          (identifier)))
+      (expression_statement
+        (index_expression
+          (int_literal)
+          (identifier))))))

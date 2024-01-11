@@ -127,12 +127,16 @@ module.exports = grammar({
     ),
 
     _statement: $ => choice(
+      $.empty_statement,
       $._declaration,
       $._simple_statement,
       $.for_statement,
       $.return_statement,
+      $.block,
       // TODO: other kinds of statements
     ),
+
+    empty_statement: _ => ';',
 
     _declaration: $ => choice(
       $.var_declaration,
@@ -156,6 +160,7 @@ module.exports = grammar({
       $.increment_statement,
       $.decrement_statement,
       $.assignment_statement,
+      $.if_statement,
     ),
 
     expression_statement: $ => $._expression,
@@ -170,13 +175,21 @@ module.exports = grammar({
       field('right', $.expression_list),
     ),
 
-    for_statement: $ => seq(
-      'for',
-      choice(seq('(', $._for_condition, ')'), optional($._for_condition)),
-      field('body', $.block),
+    if_statement: $ => seq(
+      'if',
+      field('condition', $._expression),
+      field('consequence', $.block),
+      optional(seq(
+        'else',
+        field('alternative', choice($.block, $.if_statement)),
+      )),
     ),
 
-    _for_condition: $ => choice($._expression, $.for_statement_body),
+    for_statement: $ => seq(
+      'for',
+      optional(choice($._expression, $.for_statement_body)),
+      field('body', $.block),
+    ),
 
     for_statement_body: $ => seq(
       field('init', optional($._simple_statement)),
@@ -197,6 +210,7 @@ module.exports = grammar({
       $.index_expression,
       $.int_literal,
       // TODO: other kinds of expressions
+      $.parenthesized_expression,
     ),
 
     index_expression: $ => prec(PREC.primary, seq(
@@ -241,6 +255,8 @@ module.exports = grammar({
       seq('0', choice('o', 'O'), optional('_'), octalDigits),
       seq('0', choice('x', 'X'), optional('_'), hexDigits),
     )),
+
+    parenthesized_expression: $ => seq('(', $._expression, ')'),
   },
 });
 
