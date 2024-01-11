@@ -28,6 +28,9 @@ const [hexDigits, octalDigits, decimalDigits, binaryDigits] = [
   /[01]/,
 ].map(d => seq(d, repeat(seq(optional('_'), d))));
 
+const
+  mulDiv = ['*', '/', '%', '<<', '>>', '&'], // mul, div, mod, sl, sr, bw-and
+  addSub = ['+', '-', '|', '^']; // add, sub, bw-or, bw-xor
 
 module.exports = grammar({
   name: "dew",
@@ -69,9 +72,11 @@ module.exports = grammar({
       'fun',
       field('name', $.identifier),
       field('parameters', $.parameter_list),
-      field('return_type', optional(choice($._simple_type, $.return_type_list))),
+      field('return_type', optional($._return_type)),
       field('body', optional($.block)),
     )),
+
+    _return_type: $ => choice($._simple_type, $.return_type_list),
 
     return_type_list: $ => seq(
       '(',
@@ -92,10 +97,7 @@ module.exports = grammar({
       field('name', $.identifier),
     ),
 
-    _type: $ => choice(
-      $._simple_type,
-      $.parenthesized_type,
-    ),
+    _type: $ => choice($._simple_type, $.parenthesized_type),
 
     parenthesized_type: $ => seq('(', $._type, ')'),
 
@@ -126,7 +128,7 @@ module.exports = grammar({
 
     _statement: $ => choice(
       $._declaration,
-      // $._simple_statement,
+      $._simple_statement,
       $.return_statement,
       // TODO: other kinds of statements
     ),
@@ -146,9 +148,26 @@ module.exports = grammar({
         commaSep1(field('name', $.identifier))),
     ),
 
-    // _simple_statement: $ => choice(
-    //
-    // ),
+    _simple_statement: $ => choice(
+      $.expression_statement,
+      // These are now statements,
+      // can't blow yourself up by having prefix increments/decrements
+      $.increment_statement,
+      $.decrement_statement,
+      $.assignment_statement,
+    ),
+
+    expression_statement: $ => $._expression,
+    increment_statement: $ => seq($._expression, '++'),
+    decrement_statement: $ => seq($._expression, '--'),
+
+    assignment_statement: $ => seq(
+      field('left', $.expression_list),
+      field('operator', choice(
+        ...mulDiv.concat(addSub).map(op => op + '=').concat('='))
+      ),
+      field('right', $.expression_list),
+    ),
 
     return_statement: $ => seq('return', optional($.expression_list)),
 
@@ -176,8 +195,8 @@ module.exports = grammar({
     )),
 
     binary_expression: $ => choice(...[
-      [PREC.mul_div, choice('*', '/', '%', '<<', '>>', '&')], // mul, div, mod, sl, sr, bw-and
-      [PREC.add_sub, choice('+', '-', '|', '^')], // add, sub, bw-or, bw-xor
+      [PREC.mul_div, choice(...mulDiv)],
+      [PREC.add_sub, choice(...addSub)],
       [PREC.lt_gt_e, choice('>', '<', '>=', '<=', '==', '!=')], // gt, lt, gte, lte, eq, neq
       [PREC.and, '&&'], // logical and
       [PREC.or, '||'], // logical or
