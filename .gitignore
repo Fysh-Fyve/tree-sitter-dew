@@ -14,3 +14,8 @@ target
 bindings/c/*.h
 bindings/c/tree-sitter-*.pc
 .build/
+
+# Ignore for now, once this is actually used you'll kinda need it
+bindings
+src
+binding.gyp
