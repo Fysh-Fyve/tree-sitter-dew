@@ -158,3 +158,108 @@ fun main() {
         (identifier))
       (decrement_statement
         (identifier)))))
+
+================================================================================
+For loop
+================================================================================
+
+fun main() {
+  for i = 0; i < 10; i++ {
+
+  }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (for_statement
+        (for_statement_body
+          (assignment_statement
+            (expression_list
+              (identifier))
+            (expression_list
+              (int_literal)))
+          (binary_expression
+            (identifier)
+            (int_literal))
+          (increment_statement
+            (identifier)))
+        (block)))))
+
+================================================================================
+For loop with optional parens
+================================================================================
+
+fun main() {
+  i8 i
+  for (i = 0; i < 10; i++) {
+
+  }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (var_declaration
+        (type_identifier)
+        (identifier))
+      (for_statement
+        (for_statement_body
+          (assignment_statement
+            (expression_list
+              (identifier))
+            (expression_list
+              (int_literal)))
+          (binary_expression
+            (identifier)
+            (int_literal))
+          (increment_statement
+            (identifier)))
+        (block)))))
+
+================================================================================
+Infinite loop
+================================================================================
+
+fun main() {
+  for { }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (for_statement
+        (block)))))
+
+================================================================================
+While loop
+================================================================================
+
+fun main() {
+  for ever {
+
+  }
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (for_statement
+        (identifier)
+        (block)))))

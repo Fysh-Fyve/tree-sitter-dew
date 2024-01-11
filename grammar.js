@@ -129,6 +129,7 @@ module.exports = grammar({
     _statement: $ => choice(
       $._declaration,
       $._simple_statement,
+      $.for_statement,
       $.return_statement,
       // TODO: other kinds of statements
     ),
@@ -167,6 +168,22 @@ module.exports = grammar({
         ...mulDiv.concat(addSub).map(op => op + '=').concat('='))
       ),
       field('right', $.expression_list),
+    ),
+
+    for_statement: $ => seq(
+      'for',
+      choice(seq('(', $._for_condition, ')'), optional($._for_condition)),
+      field('body', $.block),
+    ),
+
+    _for_condition: $ => choice($._expression, $.for_statement_body),
+
+    for_statement_body: $ => seq(
+      field('init', optional($._simple_statement)),
+      ';',
+      field('cond', optional($._expression)),
+      ';',
+      field('update', optional($._simple_statement)),
     ),
 
     return_statement: $ => seq('return', optional($.expression_list)),
