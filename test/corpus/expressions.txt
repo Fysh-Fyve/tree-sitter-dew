@@ -154,3 +154,23 @@ fun maths() {
         (index_expression
           (int_literal)
           (identifier))))))
+
+================================================================================
+Call Expression
+================================================================================
+
+fun main() {
+    foo()
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (expression_statement
+        (call_expression
+          (identifier)
+          (argument_list))))))

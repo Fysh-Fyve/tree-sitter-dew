@@ -78,19 +78,13 @@ module.exports = grammar({
 
     _return_type: $ => choice($._simple_type, $.return_type_list),
 
-    return_type_list: $ => seq(
-      '(',
+    return_type_list: $ => parens(
       $._type,
       ',',
       seq(commaSep($._type), optional(',')),
-      ')',
     ),
 
-    parameter_list: $ => seq(
-      '(',
-      optional(seq(commaSep($.parameter_declaration), optional(','))),
-      ')',
-    ),
+    parameter_list: $ => parens(optional(list($.parameter_declaration))),
 
     parameter_declaration: $ => seq(
       field('type', $._type),
@@ -99,7 +93,7 @@ module.exports = grammar({
 
     _type: $ => choice($._simple_type, $.parenthesized_type),
 
-    parenthesized_type: $ => seq('(', $._type, ')'),
+    parenthesized_type: $ => parens($._type),
 
     _simple_type: $ => choice(
       prec.dynamic(-1, $._type_identifier),
@@ -120,11 +114,7 @@ module.exports = grammar({
 
     block: $ => seq('{', optional($._statement_list), '}'),
 
-    _statement_list: $ => seq(
-      $._statement,
-      repeat(seq(terminator, $._statement)),
-      optional(terminator),
-    ),
+    _statement_list: $ => list($._statement, terminator),
 
     _statement: $ => choice(
       $.empty_statement,
@@ -208,10 +198,18 @@ module.exports = grammar({
       $.unary_expression,
       $.binary_expression,
       $.index_expression,
+      $.call_expression,
       $.int_literal,
       // TODO: other kinds of expressions
       $.parenthesized_expression,
     ),
+
+    call_expression: $ => prec(PREC.primary, seq(
+      field('function', $._expression),
+      field('arguments', $.argument_list),
+    )),
+
+    argument_list: $ => parens(optional(list($._expression))),
 
     index_expression: $ => prec(PREC.primary, seq(
       field('operand', $._expression),
@@ -256,9 +254,31 @@ module.exports = grammar({
       seq('0', choice('x', 'X'), optional('_'), hexDigits),
     )),
 
-    parenthesized_expression: $ => seq('(', $._expression, ')'),
+    parenthesized_expression: $ => parens($._expression),
   },
 });
+
+/**
+ * Creates a rule to match a list with a specified delimiter
+ *
+ * @param {Rule} rule
+ * @param {RuleOrLiteral} [delimiter=',']
+ */
+function list(rule, delimiter = ',') {
+  return seq(rule, repeat(seq(delimiter, rule)), optional(delimiter));
+}
+
+/**
+ * Creates a rule to match one or more of the rules inside parentheses
+ *
+ * @param {RuleOrLiteral[]} rule
+ *
+ * @return {SeqRule}
+ *
+ */
+function parens(...rule) {
+  return seq('(', ...rule, ')')
+}
 
 /**
  * Creates a rule to match one or more of the rules separated by a comma
