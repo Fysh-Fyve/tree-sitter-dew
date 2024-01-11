@@ -135,10 +135,15 @@ module.exports = grammar({
       $.var_declaration,
     ),
 
+
     var_declaration: $ => seq(
       field('type', $._type),
-      field('name', $.identifier),
-      optional(seq('=', field('value', $.expression_list))),
+      choice(
+        seq(
+          field('name', $.identifier),
+          optional(seq('=', field('value', $.expression_list))),
+        ),
+        commaSep1(field('name', $.identifier))),
     ),
 
     // _simple_statement: $ => choice(

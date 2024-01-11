@@ -130,3 +130,44 @@ fun main() {
       (var_declaration
         (type_identifier)
         (identifier)))))
+
+================================================================================
+Variable declaration with assignment
+================================================================================
+
+fun main() {
+  i8 foo = 1
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (var_declaration
+        (type_identifier)
+        (identifier)
+        (expression_list
+          (int_literal))))))
+
+================================================================================
+Multiple variable declarations
+================================================================================
+
+fun main() {
+  i8 foo, bar
+}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list)
+    (block
+      (var_declaration
+        (type_identifier)
+        (identifier)
+        (identifier)))))
