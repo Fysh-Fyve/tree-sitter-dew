@@ -30,6 +30,23 @@ fun foo(bol a) {}
     (block)))
 
 ================================================================================
+Function Declaration with Defined Type Parameter
+================================================================================
+
+fun foo(Custom a) {}
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter_declaration
+        (type_identifier)
+        (identifier)))
+    (block)))
+
+================================================================================
 Function Declaration with Two Parameters
 ================================================================================
 
@@ -61,7 +78,7 @@ fun foo() i8 {}
   (function_declaration
     (identifier)
     (parameter_list)
-    (type_identifier)
+    (builtin_type)
     (block)))
 
 ================================================================================
@@ -77,8 +94,8 @@ fun foo() (i8, i8) {}
     (identifier)
     (parameter_list)
     (return_type_list
-      (type_identifier)
-      (type_identifier))
+      (builtin_type)
+      (builtin_type))
     (block)))
 
 ================================================================================
@@ -108,8 +125,8 @@ fun foo(
         (type_identifier)
         (identifier)))
     (return_type_list
-      (type_identifier)
-      (type_identifier))
+      (builtin_type)
+      (builtin_type))
     (block)))
 
 ================================================================================
@@ -128,7 +145,7 @@ fun main() {
     (parameter_list)
     (block
       (var_declaration
-        (type_identifier)
+        (builtin_type)
         (identifier)))))
 
 ================================================================================
@@ -147,7 +164,7 @@ fun main() {
     (parameter_list)
     (block
       (var_declaration
-        (type_identifier)
+        (builtin_type)
         (identifier)
         (expression_list
           (int_literal))))))
@@ -168,6 +185,6 @@ fun main() {
     (parameter_list)
     (block
       (var_declaration
-        (type_identifier)
+        (builtin_type)
         (identifier)
         (identifier)))))

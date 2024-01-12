@@ -78,6 +78,15 @@ module.exports = grammar({
 
     _return_type: $ => choice($._simple_type, $.return_type_list),
 
+    builtin_type: _ => choice(
+      'i8',
+      'u8',
+      'i16',
+      'u16',
+      'i32',
+      'u32',
+    ),
+
     return_type_list: $ => parens(
       $._type,
       ',',
@@ -97,6 +106,7 @@ module.exports = grammar({
 
     _simple_type: $ => choice(
       prec.dynamic(-1, $._type_identifier),
+      $.builtin_type,
       $.pointer_type,
       $.array_type,
     ),
