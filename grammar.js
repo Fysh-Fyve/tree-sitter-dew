@@ -130,6 +130,7 @@ module.exports = grammar({
       $.empty_statement,
       $._declaration,
       $._simple_statement,
+      $.if_statement,
       $.for_statement,
       $.return_statement,
       $.block,
@@ -160,7 +161,6 @@ module.exports = grammar({
       $.increment_statement,
       $.decrement_statement,
       $.assignment_statement,
-      $.if_statement,
     ),
 
     expression_statement: $ => $._expression,
