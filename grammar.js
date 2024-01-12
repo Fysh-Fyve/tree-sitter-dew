@@ -93,7 +93,10 @@ module.exports = grammar({
       seq(commaSep($._type), optional(',')),
     ),
 
-    parameter_list: $ => parens(optional(list($.parameter_declaration))),
+    parameter_list: $ => parens(optional(field(
+      'params',
+      list($.parameter_declaration),
+    ))),
 
     parameter_declaration: $ => seq(
       field('type', $._type),
