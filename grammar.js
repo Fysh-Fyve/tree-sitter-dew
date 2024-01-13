@@ -22,10 +22,10 @@ const
   terminator = choice('\n', ';', '\0');
 
 const [hexDigits, octalDigits, decimalDigits, binaryDigits] = [
-  /[0-9a-fA-F]/,
-  /[0-7]/,
-  /[0-9]/,
-  /[01]/,
+  /[0-9a-fA-F]/, // Hexadecimal
+  /[0-7]/, // Octal
+  /[0-9]/, // Decimal
+  /[01]/, // Binary
 ].map(d => seq(d, repeat(seq(optional('_'), d))));
 
 const
@@ -61,6 +61,7 @@ module.exports = grammar({
     $._type,
     $._simple_type,
     $._statement,
+    $._simple_statement,
   ],
 
   rules: {
@@ -152,9 +153,11 @@ module.exports = grammar({
       choice(
         seq(
           field('name', $.identifier),
-          optional(seq('=', field('value', $.expression_list))),
+          '=',
+          field('value', $.expression_list),
         ),
-        commaSep1(field('name', $.identifier))),
+        field('name_list', commaSep1($.identifier)),
+      ),
     ),
 
     _simple_statement: $ => choice(
@@ -273,7 +276,6 @@ module.exports = grammar({
 
 /**
  * Creates a rule to match a list with a specified delimiter
- *
  * @param {Rule} rule
  * @param {RuleOrLiteral} [delimiter=',']
  */
@@ -283,11 +285,8 @@ function list(rule, delimiter = ',') {
 
 /**
  * Creates a rule to match one or more of the rules inside parentheses
- *
  * @param {RuleOrLiteral[]} rule
- *
  * @return {SeqRule}
- *
  */
 function parens(...rule) {
   return seq('(', ...rule, ')')
@@ -295,11 +294,8 @@ function parens(...rule) {
 
 /**
  * Creates a rule to match one or more of the rules separated by a comma
- *
  * @param {Rule} rule
- *
  * @return {SeqRule}
- *
  */
 function commaSep1(rule) {
   return seq(rule, repeat(seq(',', rule)));
@@ -307,11 +303,8 @@ function commaSep1(rule) {
 
 /**
  * Creates a rule to optionally match one or more of the rules separated by a comma
- *
  * @param {Rule} rule
- *
  * @return {ChoiceRule}
- *
  */
 function commaSep(rule) {
   return optional(commaSep1(rule));
